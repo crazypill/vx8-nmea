@@ -1,25 +1,5 @@
 /*
- SerialPassthrough sketch
- 
- Some boards, like the Arduino 101, the MKR1000, Zero, or the Micro, have one
- hardware serial port attached to Digital pins 0-1, and a separate USB serial
- port attached to the IDE Serial Monitor. This means that the "serial
- passthrough" which is possible with the Arduino UNO (commonly used to interact
- with devices/shields that require configuration via serial AT commands) will
- not work by default.
- 
- This sketch allows you to emulate the serial passthrough behaviour. Any text
- you type in the IDE Serial monitor will be written out to the serial port on
- Digital pins 0 and 1, and vice-versa.
- 
- On the 101, MKR1000, Zero, and Micro, "Serial" refers to the USB Serial port
- attached to the Serial Monitor, and "kInput" refers to the hardware serial
- port attached to pins 0 and 1. This sketch will emulate Serial passthrough
- using those two Serial ports on the boards mentioned above, but you can change
- these names to connect any two serial ports on a board that has multiple ports.
- 
- created 23 May 2016
- by Erik Nyquist
+ vx8nmea sketch - translates GPS output to GPS input for radio.  Save about $400.
  */
 
 
@@ -141,6 +121,7 @@ void enter_Sleep( void )
 
 
 
+// test code for deep sleep wake interrupt
 void wakeup()
 {
 //    strip.setPixelColor(0, 255, 127, 0);
@@ -178,7 +159,7 @@ void setup() {
     DAC->CTRLA.bit.ENABLE=0;
     AC->CTRLA.bit.ENABLE=0;
 
-    PM->APBBMASK.reg &= ~PM_APBBMASK_PORT;
+    PM->APBBMASK.reg &= ~PM_APBBMASK_PORT;    // you cannot control the built-in LED when this is off.
     PM->APBBMASK.reg &= ~PM_APBBMASK_DMAC;
 
     PM->APBCMASK.reg &= ~PM_APBCMASK_ADC;
@@ -188,11 +169,11 @@ void setup() {
     PM->APBCMASK.reg &= ~PM_APBCMASK_SERCOM2;
 
     // Disable USB port (to disconnect correctly from host)
-#ifndef PRODUCTION
+#ifdef PRODUCTION
     USB->DEVICE.CTRLA.reg &= ~USB_CTRLA_ENABLE;
 #endif
- 
-//    attachInterrupt( digitalPinToInterrupt(kSerialInputPin), wakeup, CHANGE);
+
+    // wake up when the serial pin does something
     EIC->WAKEUP.reg |= (1 << digitalPinToInterrupt(kSerialInputPin));
 }
 
