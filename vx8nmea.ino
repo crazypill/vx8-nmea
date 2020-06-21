@@ -253,7 +253,7 @@ void loop() {
             else
             {
                 if( input == '*' ) // checksum
-                    s_processingGGA = false;
+                    s_processingRMC = false;
                 kOutput.write( input );
             }
             
@@ -267,11 +267,10 @@ void loop() {
         {
             s_writeIndex = 0;
             s_comma = 0;
-            s_processingGGA = false;
+            s_processingRMC = false;
         }
         else
             ++s_writeIndex;
-
     }
     
     enter_Sleep();
