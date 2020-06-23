@@ -21,7 +21,7 @@ You might want to pick up this cable to interface this to your VX-8:
 https://www.amazon.com/gp/product/B00AIT49ZK
 
 The entire circuit consists of tying the ground from the trinket and radio and GPS together (I just wrapped GPS and radio's red wire together and shoved it inside the Trinket's GND pad).  
-Same thing for power: take the radio's 3.3v (grey wire) and attach to Trinket and GPS (wrap the radio's grey and GPS together and inset in Trinket's 3v OUTPUT (to bypass the voltage regulator)).  
+Same thing for power: take the radio's 3.3v (grey wire) and attach to Trinket and GPS (wrap the radio's grey and GPS together and insert in Trinket's 3v OUTPUT (to bypass the voltage regulator)).  
 Attach the blue wire from the radio to the trinket TX port (pin4). GPS TX goes to Trinket RX (pin3).
 
 ![](https://raw.githubusercontent.com/crazypill/vx8-nmea/master/GPS-VX8.jpeg)
