@@ -16,5 +16,6 @@ This seems fine in testing but you may want to add.
 You might want to pick up this cable to interface this to your VX-8:
 https://www.amazon.com/gp/product/B00AIT49ZK
 
-![](https://www.dropbox.com/s/9vs9s0yring9ocf/GPS-VX8.jpeg?dl=0)
+![](https://raw.githubusercontent.com/crazypill/vx8-nmea/master/GPS-VX8.jpeg)
+
 
