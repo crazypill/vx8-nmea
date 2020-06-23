@@ -8,6 +8,7 @@ and the Trinket's TX port is connected to the radio.  We ignore the radio's TX.
 GPS Module is: MTK3339 G.top
 
 Trinket M0: https://www.adafruit.com/product/3500
+
 MTK3339:  https://www.adafruit.com/product/790
 
 I used this coin cell holder for CR2032: 
