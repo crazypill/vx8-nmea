@@ -1,5 +1,11 @@
 /*
  vx8nmea sketch - translates GPS output to GPS input for radio.  Save about $400.
+
+ This sketch is designed to run on a Trinket M0.  The GPS TX output is connected to the Trinket's RX port 
+ and the Trinket's TX port is connected to the radio.  We ignore the radio's TX.
+
+ GPS Module is: MTK3339 G.top
+ 
  */
 
 
@@ -71,9 +77,8 @@ Adafruit_DotStar strip(1, DATAPIN, CLOCKPIN, DOTSTAR_BRG);
 
 static char s_buffer[1024];
 static int  s_writeIndex = 0;
-static int  s_comma = 0;
-static bool s_latch = false;
-static bool s_led   = false;
+static int  s_comma      = 0;
+static bool s_latch      = false;
 
 static bool s_processingGGA = false;
 static bool s_processingRMC = false;
@@ -121,38 +126,17 @@ void enter_Sleep( void )
 
 
 
-// test code for deep sleep wake interrupt
-void wakeup()
+void setup() 
 {
-//    strip.setPixelColor(0, 255, 127, 0);
-//    strip.show();
-//    blink();
-//    digitalWrite(LED_BUILTIN, HIGH);
-  s_led = true;
-}
-
-
-void blink() 
-{
-  digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(500);                       // wait for a half-second
-  digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
-  delay(500);                       // wait for a half-second
-}
-
-
-void setup() {
     kOutput.begin(9600);
 #ifndef PRODUCTION
     kInput.begin(9600);
 #endif
     s_writeIndex = 0;
 
+    // we are turning off the dotstar here...to save power.
     strip.begin();
-//    strip.setPixelColor(0, 255, 127, 0);
     strip.show();
-
-    pinMode(LED_BUILTIN, OUTPUT);
 
     I2S->CTRLA.bit.ENABLE=0;
     ADC->CTRLA.bit.ENABLE=0;
@@ -178,7 +162,8 @@ void setup() {
 }
 
 
-void loop() {
+void loop() 
+{
     while( kInput.available() )
     {
         int input = kInput.read();
@@ -274,17 +259,6 @@ void loop() {
     }
     
     enter_Sleep();
-
-    if( s_led )
-      digitalWrite(LED_BUILTIN, HIGH);
-
 }
 
-
-
-//void loop()
-//{
-//  if (kInput.available()) {     // If anything comes in kOutput (pins 0 & 1)
-//    kOutput.write(kInput.read());   // read it and send it out Serial (USB)
-//  }
-//}
+// EOF
