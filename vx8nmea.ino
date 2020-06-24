@@ -49,7 +49,10 @@ enum
 };
 
 
-#define PRODUCTION
+//#define PRODUCTION
+
+
+
 
 #ifndef PRODUCTION
 // for test
@@ -64,7 +67,7 @@ enum
 #endif
 
 #define kGPGGA_SkipParams kHDOP
-#define kGPRMC_SkipParams kRMCEWIndicator
+#define kGPRMC_SkipParams kRMCMessageID
 
 #define kSerialInputPin 3
 
@@ -75,16 +78,24 @@ enum
 
 Adafruit_DotStar strip(1, DATAPIN, CLOCKPIN, DOTSTAR_BRG);
 
-static char s_buffer[1024];
+static char s_buffer[1024] = {};
+static char s_utc[16]      = {};
+static char s_date[16]     = {};
+
 static int  s_writeIndex = 0;
 static int  s_comma      = 0;
+
 static bool s_latch      = false;
+static bool s_utc_latch  = false;
+static bool s_date_latch = false;
 
 static bool s_processingGGA = false;
 static bool s_processingRMC = false;
+static bool s_processingZDA = false;
 
 static const char* kGGAPrefix = "$GPGGA";
 static const char* kRMCPrefix = "$GPRMC";
+static const char* kZDAPrefix = "$GPZDA";
 
 
 
@@ -177,7 +188,11 @@ void loop()
             {
                 ++s_comma;
                 s_writeIndex = 0;
-                s_latch = false;
+                s_latch      = false;
+
+//                kOutput.print( "s_buffer: " );
+//                kOutput.println( s_buffer );
+//                kOutput.println( "\n" );
             }
             
             if( !s_processingGGA && checkForGPGGA( s_buffer ) )
@@ -220,9 +235,23 @@ void loop()
         else if( s_processingRMC )
         {
             // see if we should ignore the input or not...
-            if( (input != '\n') &&  (input != ',') && (input != '*') && s_comma > kGPRMC_SkipParams )
+            if( (input != '\n') /*&& (input != ',')*/ && (input != '*') && s_comma > kGPRMC_SkipParams )
             {
-                if( s_comma == kRMCSpeed )
+                if( s_comma == kRMCUTCTime )
+                {
+                    kOutput.write( input );
+                }
+                else if( s_comma == kRMCStatus ) // we have the full UTC time in there as status comes right after it...
+                {
+                    if( !s_utc_latch )  // we need to hold on to this
+                    {
+                        s_buffer[s_writeIndex] = '\0';  // stomp after the comma at the end
+                        strcpy( s_utc, &s_buffer[1] );  // ignore comma at beginning
+                        s_utc_latch = true;
+                    }  
+                    kOutput.write( input );
+                }
+                else if( s_comma == kRMCSpeed )
                 {
                     if( !s_latch )                      // needs to be rewritten from x.yy to 000x.yy (Speed over ground)
                     {
@@ -232,16 +261,39 @@ void loop()
                     }
                     kOutput.write( input );
                 }
-                else if( s_comma >= kRMCCourse )
+                else if( s_comma == kRMCDate )
+                {
+                    if( !s_date_latch )  // we need to hold on to this
+                    {
+                        s_buffer[s_writeIndex] = '\0';
+                        strcpy( s_date, &s_buffer[1] );
+                        s_date_latch = true;
+                    } 
+                    kOutput.write( input );
+                }
+                else if( s_comma >= kRMCStatus )
                     kOutput.write( input );
             }
             else
             {
-                if( input == '*' ) // checksum
-                    s_processingRMC = false;
+//                if( input == '*' ) // checksum
+//                    s_processingRMC = false;
                 kOutput.write( input );
             }
             
+        }
+        else if( s_processingZDA )
+        {
+            kOutput.print( kZDAPrefix );
+            kOutput.print( "," );
+
+            // output the time and date
+            kOutput.print( s_utc ); // has comma trailing
+            kOutput.println( "23,06,2020,,*55" );
+            s_processingZDA = false;
+            s_writeIndex = 0;
+            s_comma = 0;
+            kOutput.write( input ); // put that character at the front for further processing
         }
         else
         {
@@ -250,9 +302,15 @@ void loop()
         
         if( input == '\n' )
         {
+            // we just finished processing RMC message so send out a ZDA message
+//            if( s_processingRMC )
+//              s_processingZDA = true;     // now do the ZDA string after consuming the checksum
+            
             s_writeIndex = 0;
             s_comma = 0;
             s_processingRMC = false;
+            s_utc_latch  = false;
+            s_date_latch = false;
         }
         else
             ++s_writeIndex;
