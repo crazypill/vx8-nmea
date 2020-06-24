@@ -48,12 +48,45 @@ enum
     kRMCChecksum
 };
 
+enum
+{
+    kRMCMessageID_width         = 6,
+    kRMCUTCTime_width           = 10,
+    kRMCStatus_width            = 1,
+    kRMCLatitude_width          = 9,
+    kRMCNSIndicator_width       = 1,
+    kRMCLongitude_width         = 10,
+    kRMCEWIndicator_width       = 1,
+    kRMCSpeed_width             = 7,
+    kRMCCourse_width            = 6,
+    kRMCDate_width              = 6,
+    kRMCMagenticVariation_width = 0,
+    kRMCMode_width              = 0,
+    kRMCChecksum_width          = 2
+};
+
+// these line up with the RMC message enums, these are the widths of each field
+const int kPaddingArray[] = 
+{
+    kRMCMessageID_width,
+    kRMCUTCTime_width,
+    kRMCStatus_width,
+    kRMCLatitude_width,
+    kRMCNSIndicator_width,
+    kRMCLongitude_width,
+    kRMCEWIndicator_width,
+    kRMCSpeed_width,
+    kRMCCourse_width,
+    kRMCDate_width,
+    kRMCMagenticVariation_width,
+    kRMCMode_width,
+    kRMCChecksum_width
+};
 
 // When we are in production mode, we shut down the USB, and output
 // on the same serial port we receive data on. GPS TX->Trinket RX, Trinket TX->Radio RX.
 // When not in production mode, we output on the built-in USB for debugging. Trinket TX->USB serial monitor.
-#define PRODUCTION
-
+//#define PRODUCTION
 
 
 
@@ -188,6 +221,7 @@ void loop()
             else if( !s_processingRMC && checkForGPRMC( s_buffer ) )
             {
                 s_processingRMC = true;
+                s_mute = true;
             }
         }
         else
@@ -216,40 +250,25 @@ void loop()
               }
         }
 
-
+        // pad everything in between the time and magnetic variation...  Yaesu uses fixed positions for all this!
         if( s_processingRMC )
         {
-              if( s_comma == kRMCSpeed )
-              {
-                  // do not write output until we have full field
-                  s_mute = true;
-              }
-              else if( s_comma == kRMCCourse )
-              {
-                  // output altitude we just buffered up while buffering up the course info
-                  if( !s_latch )   
-                  {
-                      // needs to be rewritten from x.yy to 000x.yy (Speed over ground)
-                      kOutput.write( ',' );
-                      outputPaddedString( s_buffer, 7 );
-                      s_latch = true; // do this only once at the beginning
-                  }
-              }
-              else if( s_comma == kRMCDate )
-              {
-                  s_mute = false;
-                  
-                  // spit out the course info we just finished buffering.
-                  if( !s_latch )   
-                  {
-                      // needs to be rewritten from xx.yy to 0xx.yy
-                      kOutput.write( ',' );
-                      outputPaddedString( s_buffer, 6 );
-                      s_latch = true; // do this only once at the beginning
-                  }
-             }
+            if( (s_comma > kRMCUTCTime) && (s_comma < kRMCChecksum) )
+            {
+                s_mute = true;
+                
+                if( !s_latch )   
+                {
+                    kOutput.write( ',' );
+                    outputPaddedString( s_buffer, kPaddingArray[s_comma - 1] );
+                    s_latch = true; // do this only once at the beginning
+                }
+            }
+            else if( s_comma == kRMCChecksum )
+                s_mute = false; // this way the rest of the line appears.
         }
-
+          
+        
         if( !s_mute )
             kOutput.write( input );
         
@@ -259,6 +278,9 @@ void loop()
             s_comma = 0;
             s_processingRMC = false;
             s_processingGGA = false;
+            if( s_mute )
+                kOutput.write( input ); // spit out that last newline...
+            s_mute = false;
         }
     }
     
