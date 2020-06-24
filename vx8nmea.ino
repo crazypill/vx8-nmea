@@ -86,7 +86,7 @@ const int kPaddingArray[] =
 // When we are in production mode, we shut down the USB, and output
 // on the same serial port we receive data on. GPS TX->Trinket RX, Trinket TX->Radio RX.
 // When not in production mode, we output on the built-in USB for debugging. Trinket TX->USB serial monitor.
-//#define PRODUCTION
+#define PRODUCTION
 
 
 
@@ -250,7 +250,7 @@ void loop()
               }
         }
 
-        // pad everything in between the time and magnetic variation...  Yaesu uses fixed positions for all this!
+        // pad everything in between the time and checksum...  Yaesu uses fixed positions for all this!
         if( s_processingRMC )
         {
             if( (s_comma > kRMCUTCTime) && (s_comma < kRMCChecksum) )
