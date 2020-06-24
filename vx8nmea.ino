@@ -49,6 +49,9 @@ enum
 };
 
 
+// When we are in production mode, we shut down the USB, and output
+// on the same serial port we receive data on. GPS TX->Trinket RX, Trinket TX->Radio RX.
+// When not in production mode, we output on the built-in USB for debugging. Trinket TX->USB serial monitor.
 #define PRODUCTION
 
 
