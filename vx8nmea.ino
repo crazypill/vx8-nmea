@@ -49,7 +49,7 @@ enum
 };
 
 
-//#define PRODUCTION
+#define PRODUCTION
 
 
 
@@ -66,21 +66,12 @@ enum
 #define kOutput Serial1
 #endif
 
-#define kGPGGA_SkipParams kHDOP
-#define kGPRMC_SkipParams kRMCEWIndicator
-
-#define kSerialInputPin 3
-
-
-#define DATAPIN    7
-#define CLOCKPIN   8
-
-
-Adafruit_DotStar strip(1, DATAPIN, CLOCKPIN, DOTSTAR_BRG);
+#define kSerialInputPin  3
+#define kDotStarDataPin  7
+#define kDotStarClockPin 8
+Adafruit_DotStar strip( 1, kDotStarDataPin, kDotStarClockPin, DOTSTAR_BRG );
 
 static char s_buffer[1024] = {};
-static char s_utc[16]      = {};
-static char s_date[16]     = {};
 
 static int  s_writeIndex = 0;
 static int  s_comma      = 0;
@@ -116,9 +107,6 @@ void outputPaddedString( const char* string, int padded_size )
     int input_size = strlen( string );
     int pad_amount = padded_size - input_size;
 
-//    kOutput.print( "\n\ninput: " ); kOutput.println( string );
-//    kOutput.print( "pad_amount : " ); kOutput.println( pad_amount );
-    
     if( pad_amount > 0 )
     {
         for( int i = 0; i < pad_amount; i++ )
@@ -135,7 +123,7 @@ void enter_Sleep( void )
     SCB->SCR &= ~( SCB_SCR_SLEEPDEEP_Msk );  // low-power mode = sleep mode
 
     __DSB();
-    __WFE();  // enter low-power mode
+    __WFE();  // enter low-power mode - wait for event (not interrupt)
 }
 
 
