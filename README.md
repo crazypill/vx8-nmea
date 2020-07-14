@@ -3,7 +3,7 @@
 vx8nmea sketch - translates GPS output to GPS input for Yaesu VX-8 radio.  Save about $400.
 
 This sketch is designed to run on a Trinket M0.  The GPS TX output is connected to the Trinket's RX port 
-and the Trinket's TX port is connected to the radio.  We ignore the radio's TX.
+and the Trinket's TX port is connected to the VX-8 radio.  We ignore the VX-8 radio's TX output (which it uses to configure the GPS unit. The G.top module is already properly configured by default).
 
 GPS Module is: MTK3339 G.top
 
